@@ -10,41 +10,6 @@ deactivate
 
 pip install fastapi uvicorn "passlib[bcrypt]" "python-jose[cryptography]" python-dotenv python-multipart
 
-
-# TABELA
-CREATE TABLE IF NOT EXISTS usuarios (
-    id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    login           VARCHAR NOT NULL UNIQUE,
-    status          VARCHAR NOT NULL DEFAULT 'A',
-    senha           VARCHAR NULL,
-    data_cadastro   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-
 docker compose up -d
 
-
-services:
-  db:
-    image: postgres:16
-    container_name: capelania_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: capelania
-      POSTGRES_PASSWORD: capelania
-      POSTGRES_DB: capelania
-    ports:
-      - "5432:5432"
-    volumes:
-      - capelania_db_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
-
-volumes:
-  capelania_db_data:
-
-
-  .vscode
-  {
-    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python3",
-    "python.analysis.extraPaths": [
-        "${workspaceFolder}/.venv/lib/python3.14/site-packages"
-    ]
-}
+.\.venv\Scripts\python.exe create_table.py

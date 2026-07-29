@@ -21,7 +21,7 @@ def main():
         port=os.getenv("DB_PORT", "5432"),
         dbname=os.getenv("DB_NAME", "capelania"),
         user=os.getenv("DB_USER", "capelania"),
-        password=os.getenv("DB_PASSWORD", "159753"),
+        password=os.environ["DB_PASSWORD"],
     )
     try:
         with conn:
