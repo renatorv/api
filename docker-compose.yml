@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16
+    container_name: capelania_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: capelania
+      POSTGRES_PASSWORD: "159753"
+      POSTGRES_DB: capelania
+    ports:
+      - "5432:5432"
+    volumes:
+      - capelania_db_data:/var/lib/postgresql/data
+
+volumes:
+  capelania_db_data:
