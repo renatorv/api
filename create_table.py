@@ -1,36 +1,53 @@
-import os
+import asyncio
 
-import psycopg2
-from dotenv import load_dotenv
-
-load_dotenv()
+from database import conectar
 
 CREATE_TABLE_USUARIOS = """
 CREATE TABLE IF NOT EXISTS usuarios (
     id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    login           VARCHAR NOT NULL UNIQUE,
+    login           VARCHAR(20) NOT NULL UNIQUE,
     status          VARCHAR NOT NULL DEFAULT 'A',
-    senha           VARCHAR(12) NOT NULL,
-    data_cadastro   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    senha           VARCHAR(20) NOT NULL,
+    data_cadastro   TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
 );
 """
 
-def main():
-    conn = psycopg2.connect(
-        host=os.getenv("DB_HOST", "localhost"),
-        port=os.getenv("DB_PORT", "5432"),
-        dbname=os.getenv("DB_NAME", "capelania"),
-        user=os.getenv("DB_USER", "capelania"),
-        password=os.environ["DB_PASSWORD"],
-    )
+CREATE_TABLE_VISITAS = """
+CREATE TABLE IF NOT EXISTS visitas (
+    id                      INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_usuario              INTEGER NOT NULL REFERENCES usuarios(id),
+    nome_visitado           VARCHAR(60) NOT NULL,
+    data_visita             TIMESTAMP NOT NULL,
+    descricao               VARCHAR(300) NOT NULL,
+    visitar_novamente       BOOLEAN NOT NULL DEFAULT FALSE,
+    proxima_visita          TIMESTAMP,
+    motivo_proxima_visita   VARCHAR(300),
+    mostrar_app             BOOLEAN NOT NULL DEFAULT TRUE,
+    telefone                VARCHAR(11) NOT NULL,
+    endereco                VARCHAR NOT NULL,
+    data_cadastro           TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+);
+
+COMMENT ON COLUMN visitas.nome_visitado IS 'Nome da pessoa que recebeu a visita de um membro do Ministério de Capelania.';
+COMMENT ON COLUMN visitas.descricao IS 'Descrição do que foi conversado durante a visita.';
+COMMENT ON COLUMN visitas.visitar_novamente IS 'Identifica se será necessário uma nova visita para essa pessoa.';
+COMMENT ON COLUMN visitas.proxima_visita IS 'Data em que a próxima visita deve acontecer.';
+COMMENT ON COLUMN visitas.motivo_proxima_visita IS 'Motivo pelo qual a próxima visita deve acontecer.';
+COMMENT ON COLUMN visitas.mostrar_app IS 'Identifica se essa visita deve ser mostrada no aplicativo.';
+COMMENT ON COLUMN visitas.telefone IS 'Telefone da pessoa que recebeu a visita.';
+COMMENT ON COLUMN visitas.endereco IS 'Endereço da pessoa que recebeu a visita.';
+"""
+
+async def main():
+    conn = await conectar()
     try:
-        with conn:
-            with conn.cursor() as cur:
-                cur.execute(CREATE_TABLE_USUARIOS)
+        await conn.execute(CREATE_TABLE_USUARIOS)
         print("Tabela 'usuarios' criada com sucesso.")
+        await conn.execute(CREATE_TABLE_VISITAS)
+        print("Tabela 'visitas' criada com sucesso.")
     finally:
-        conn.close()
+        await conn.close()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

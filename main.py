@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from database import lifespan
+
+app = FastAPI(lifespan=lifespan)
 
 from routes.auth_routes import auth_router
 from routes.visits_routes import visit_router
