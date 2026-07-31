@@ -5,6 +5,7 @@ from schemas import UserSchema
 from fastapi import APIRouter, Depends, HTTPException
 
 from database import get_session
+from security import gerar_hash_senha
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +15,11 @@ auth_router = APIRouter(prefix="/auth", tags=["auth"])
 @auth_router.post("/register")
 async def register_user(user: UserSchema, session = Depends(get_session)):
     """Cadastra um novo usuário para acesso ao sistema."""
+
+    try:
+        senha_criptografada = gerar_hash_senha(user.senha)
+    except ValueError as erro:
+        raise HTTPException(status_code=400, detail=str(erro))
 
     try:
         async with session.transaction():
@@ -27,7 +33,7 @@ async def register_user(user: UserSchema, session = Depends(get_session)):
             await session.execute(
                 "INSERT INTO usuarios (login, senha) VALUES ($1, $2)",
                 user.login,
-                user.senha,
+                senha_criptografada,
             )
     except HTTPException:
         raise
@@ -36,7 +42,7 @@ async def register_user(user: UserSchema, session = Depends(get_session)):
     except asyncpg.StringDataRightTruncationError:
         raise HTTPException(
             status_code=400,
-            detail="Login e senha devem ter no máximo 20 caracteres.",
+            detail="Login deve ter no máximo 20 caracteres.",
         )
     except asyncpg.NotNullViolationError as erro:
         raise HTTPException(

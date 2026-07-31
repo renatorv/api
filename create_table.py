@@ -7,9 +7,11 @@ CREATE TABLE IF NOT EXISTS usuarios (
     id              INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     login           VARCHAR(20) NOT NULL UNIQUE,
     status          VARCHAR NOT NULL DEFAULT 'A',
-    senha           VARCHAR(20) NOT NULL,
+    senha           VARCHAR(80) NOT NULL,
     data_cadastro   TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
 );
+
+COMMENT ON COLUMN usuarios.senha IS 'Hash bcrypt da senha (60 caracteres). Nunca armazenar a senha em texto puro.';
 """
 
 CREATE_TABLE_VISITAS = """
