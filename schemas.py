@@ -13,7 +13,7 @@ class VisitSchema(BaseModel):
     nome_visitado: str
     data_visita: datetime
     descricao: str
-    visitar_novamente: Optional[bool] = None
+    visitar_novamente: bool = False
     proxima_visita: Optional[datetime] = None
     motivo_proxima_visita: Optional[str] = None
     mostrar_app: bool
@@ -26,6 +26,14 @@ class VisitSchema(BaseModel):
         """Trata string vazia enviada pelo formulario como ausencia de valor."""
         if isinstance(valor, str) and not valor.strip():
             return None
+        return valor
+
+    @field_validator("visitar_novamente", mode="before")
+    @classmethod
+    def nulo_para_falso(cls, valor):
+        """A coluna e NOT NULL DEFAULT FALSE, entao ausencia de valor vira False."""
+        if valor is None or (isinstance(valor, str) and not valor.strip()):
+            return False
         return valor
 
     @field_validator("data_visita", "proxima_visita")

@@ -9,7 +9,7 @@ class Visita(BaseModel):
     nome_visitado: str
     data_visita: datetime
     descricao: str
-    visitar_novamente: Optional[bool] = None
+    visitar_novamente: bool = False
     proxima_visita: Optional[datetime] = None
     motivo_proxima_visita: Optional[str] = None
     mostrar_app: bool

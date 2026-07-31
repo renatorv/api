@@ -19,8 +19,8 @@ async def new_visit(visit: VisitSchema,  session = Depends(get_session)):
 
     try:
         async with session.transaction():
-            await session.execute(
-                "INSERT INTO visitas (id_usuario, nome_visitado, data_visita, descricao, visitar_novamente, proxima_visita, motivo_proxima_visita, mostrar_app, telefone, endereco) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)",
+            visita_id = await session.fetchval(
+                "INSERT INTO visitas (id_usuario, nome_visitado, data_visita, descricao, visitar_novamente, proxima_visita, motivo_proxima_visita, mostrar_app, telefone, endereco) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id",
                 new_visit.id_usuario, new_visit.nome_visitado, new_visit.data_visita,
                 new_visit.descricao, new_visit.visitar_novamente, new_visit.proxima_visita,
                 new_visit.motivo_proxima_visita, new_visit.mostrar_app, new_visit.telefone,
@@ -54,4 +54,5 @@ async def new_visit(visit: VisitSchema,  session = Depends(get_session)):
             detail="Não foi possível cadastrar a visita.",
         )
 
-    return {"mensagem":"Visita cadastrada com sucesso!!"}
+    logger.info("Visita %s cadastrada pelo usuário %s", visita_id, new_visit.id_usuario)
+    return {"mensagem": "Visita cadastrada com sucesso!!", "id": visita_id}
