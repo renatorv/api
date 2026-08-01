@@ -6,10 +6,27 @@ python -m venv .venv
 
 source .venv/bin/activate
 
+pip install -r requirements.txt
+
 deactivate
 
 pip install fastapi uvicorn "passlib[bcrypt]" "python-jose[cryptography]" python-dotenv python-multipart
 
 docker compose up -d
 
-.\.venv\Scripts\python.exe create_table.py
+.\.venv\Scripts\python.exe create_table.py => windows
+
+./.venv/bin/python create_table.py => mac
+
+{
+  "id_usuario": 1,
+  "nome_visitado": "Fulano de Tal",
+  "data_visita": "2026-08-01",
+  "descricao": "Cadastro teste",
+  "visitar_novamente": false,
+  "proxima_visita": "",
+  "motivo_proxima_visita": "Visita teste",
+  "mostrar_app": true,
+  "telefone": "64984154530",
+  "endereco": "Rua do Teste"
+}
