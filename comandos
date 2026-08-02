@@ -25,7 +25,7 @@ docker compose up -d
   "descricao": "Cadastro teste",
   "visitar_novamente": false,
   "proxima_visita": "",
-  "motivo_proxima_visita": "Visita teste",
+  "motivo_proxima_visita": "",
   "mostrar_app": true,
   "telefone": "64984154530",
   "endereco": "Rua do Teste"

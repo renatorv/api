@@ -3,6 +3,13 @@ from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 
 
+class LoginSchema(BaseModel):
+    login: str
+    senha: str
+
+    # class Config:
+    #     from_attributes = True
+
 class UserSchema(BaseModel):
     login: str
     senha: str
