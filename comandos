@@ -18,6 +18,12 @@ docker compose up -d
 
 ./.venv/bin/python create_table.py => mac
 
+VER UM ERRO
+except JWTError as erro:
+    print("Erro ao decodificar o token:", erro)
+
+logger.exception("Hash de senha inválido para o usuário %s", login)
+
 {
   "id_usuario": 1,
   "nome_visitado": "Fulano de Tal",
