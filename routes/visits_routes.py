@@ -36,13 +36,19 @@ async def new_visit(visit: VisitSchema,  session = Depends(get_session)):
 
 
 @visit_router.post("/visit/cancel/{id_visita}")
-async def cancel_visit(id_visita: int, session = Depends(get_session)):
+async def cancel_visit(id_visita: int, session = Depends(get_session), usuario = Depends(verify_token)):
     """Cancela uma visita existente. Realiza um update e altera o status da visita para 'C'"""
     visit = await session.fetchrow("SELECT * FROM visitas WHERE id = $1", id_visita)
     if not visit:
         raise HTTPException(
             status_code=404,
             detail=f"Visita {id_visita} não encontrada.",
+        )
+
+    if visit["id_usuario"] != usuario["id"]:
+        raise HTTPException(
+            status_code=403,
+            detail="Você não tem permissão para cancelar esta visita.",
         )
 
     async with handle_db_errors("cancelar a visita", catch_unexpected=True):
