@@ -51,3 +51,31 @@ class VisitSchema(BaseModel):
             return valor.astimezone().replace(tzinfo=None)
         return valor
 
+
+class VisitUpdateSchema(BaseModel):
+    nome_visitado: Optional[str] = None
+    data_visita: Optional[datetime] = None
+    descricao: Optional[str] = None
+    visitar_novamente: Optional[bool] = None
+    proxima_visita: Optional[datetime] = None
+    motivo_proxima_visita: Optional[str] = None
+    mostrar_app: Optional[bool] = None
+    telefone: Optional[str] = None
+    endereco: Optional[str] = None
+
+    @field_validator("proxima_visita", "motivo_proxima_visita", mode="before")
+    @classmethod
+    def vazio_para_nulo(cls, valor):
+        """Trata string vazia enviada pelo formulario como ausencia de valor."""
+        if isinstance(valor, str) and not valor.strip():
+            return None
+        return valor
+
+    @field_validator("data_visita", "proxima_visita")
+    @classmethod
+    def remover_timezone(cls, valor: Optional[datetime]) -> Optional[datetime]:
+        """Converte datas com timezone para o horario local, pois as colunas sao TIMESTAMP."""
+        if valor is not None and valor.tzinfo is not None:
+            return valor.astimezone().replace(tzinfo=None)
+        return valor
+

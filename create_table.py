@@ -68,11 +68,6 @@ async def main():
         print("Tabela 'usuarios' criada com sucesso.")
         await conn.execute(CREATE_TABLE_VISITAS)
         print("Tabela 'visitas' criada com sucesso.")
-        await conn.execute(ADD_COLUMN_STATUS_USUARIOS)
-        await conn.execute(ADD_COLUMN_STATUS_VISITAS)
-        print("Coluna 'status' garantida em 'usuarios' e 'visitas'.")
-        await conn.execute(ADD_COLUMN_ADMIN_USUARIOS)
-        print("Coluna 'admin' garantida em 'usuarios'.")
     finally:
         await conn.close()
 
