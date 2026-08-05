@@ -15,4 +15,5 @@ class Visita(BaseModel):
     mostrar_app: bool
     telefone: str
     endereco: str
+    status: str = "A"
     data_cadastro: datetime = Field(default_factory=datetime.now)

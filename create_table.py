@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS visitas (
     mostrar_app             BOOLEAN NOT NULL DEFAULT TRUE,
     telefone                VARCHAR(11) NOT NULL,
     endereco                VARCHAR NOT NULL,
+    status                  VARCHAR NOT NULL DEFAULT 'A',
     data_cadastro           TIMESTAMP NOT NULL DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
 );
 
@@ -40,6 +41,16 @@ COMMENT ON COLUMN visitas.telefone IS 'Telefone da pessoa que recebeu a visita.'
 COMMENT ON COLUMN visitas.endereco IS 'Endereço da pessoa que recebeu a visita.';
 """
 
+# Garante a coluna 'status' em bancos criados antes dela existir, já que
+# CREATE TABLE IF NOT EXISTS não altera tabelas já existentes.
+ADD_COLUMN_STATUS_USUARIOS = """
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS status VARCHAR NOT NULL DEFAULT 'A';
+"""
+
+ADD_COLUMN_STATUS_VISITAS = """
+ALTER TABLE visitas ADD COLUMN IF NOT EXISTS status VARCHAR NOT NULL DEFAULT 'A';
+"""
+
 async def main():
     conn = await conectar()
     try:
@@ -47,6 +58,9 @@ async def main():
         print("Tabela 'usuarios' criada com sucesso.")
         await conn.execute(CREATE_TABLE_VISITAS)
         print("Tabela 'visitas' criada com sucesso.")
+        await conn.execute(ADD_COLUMN_STATUS_USUARIOS)
+        await conn.execute(ADD_COLUMN_STATUS_VISITAS)
+        print("Coluna 'status' garantida em 'usuarios' e 'visitas'.")
     finally:
         await conn.close()
 
