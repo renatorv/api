@@ -1,8 +1,8 @@
 import logging
 
-import asyncpg
 import bcrypt
 from dependencies import verify_token
+from exceptions import handle_db_errors
 from main import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, SECRET_KEY
 from schemas import LoginSchema, UserSchema
 from fastapi import APIRouter, Depends, HTTPException
@@ -36,7 +36,7 @@ def generate_token(id_usuario, token_duration=timedelta(minutes=ACCESS_TOKEN_EXP
 
 async def auth_user(login, senha, session):
     """Autentica um usuário e retorna seu ID se válido, caso contrário retorna False."""
-    try:
+    async with handle_db_errors("autenticar o usuário"):
         async with session.transaction():
             usuario = await session.fetchrow(
                 "SELECT * from usuarios WHERE login = $1",
@@ -52,18 +52,6 @@ async def auth_user(login, senha, session):
                 logger.exception("Hash de senha inválido para o usuário %s", login)
                 return False
             return usuario
-    except (asyncpg.PostgresConnectionError, OSError):
-        logger.exception("Banco indisponível ao autenticar usuário")
-        raise HTTPException(
-            status_code=503,
-            detail="Banco de dados indisponível. Tente novamente em instantes.",
-        )
-    except asyncpg.PostgresError:
-        logger.exception("Erro do banco ao autenticar usuário")
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível autenticar o usuário.",
-        )
 
 
 @auth_router.post("/login")
@@ -108,7 +96,11 @@ async def register_user(user: UserSchema, session = Depends(get_session)):
     except ValueError as erro:
         raise HTTPException(status_code=400, detail=str(erro))
 
-    try:
+    async with handle_db_errors(
+        "cadastrar o usuário",
+        unique_detail="Usuário já cadastrado.",
+        truncation_detail="Login deve ter no máximo 20 caracteres.",
+    ):
         async with session.transaction():
             existe = await session.fetchval(
                 "SELECT id FROM usuarios WHERE login = $1",
@@ -122,32 +114,6 @@ async def register_user(user: UserSchema, session = Depends(get_session)):
                 user.login,
                 senha_criptografada,
             )
-    except HTTPException:
-        raise
-    except asyncpg.UniqueViolationError:
-        raise HTTPException(status_code=400, detail="Usuário já cadastrado.")
-    except asyncpg.StringDataRightTruncationError:
-        raise HTTPException(
-            status_code=400,
-            detail="Login deve ter no máximo 20 caracteres.",
-        )
-    except asyncpg.NotNullViolationError as erro:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Campo obrigatório não informado: {erro.column_name}.",
-        )
-    except (asyncpg.PostgresConnectionError, OSError):
-        logger.exception("Banco indisponível ao cadastrar usuário")
-        raise HTTPException(
-            status_code=503,
-            detail="Banco de dados indisponível. Tente novamente em instantes.",
-        )
-    except asyncpg.PostgresError:
-        logger.exception("Erro do banco ao cadastrar usuário")
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível cadastrar o usuário.",
-        )
 
     logger.info("Usuário %s cadastrado", user.login)
     return {"mensagem": f"Usuário cadastrado com sucesso: {user.login}"}

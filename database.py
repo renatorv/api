@@ -1,11 +1,14 @@
+import logging
 import os
 from contextlib import asynccontextmanager
 
 import asyncpg
 from dotenv import load_dotenv
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 def _conexao_config():
@@ -40,5 +43,16 @@ async def lifespan(app: FastAPI):
 
 async def get_session(request: Request):
     """Dependência do FastAPI: pega uma sessão do pool e devolve ao final."""
-    async with request.app.state.pool.acquire() as conn:
+    pool = request.app.state.pool
+    try:
+        conn = await pool.acquire()
+    except (asyncpg.PostgresError, OSError):
+        logger.exception("Banco indisponível ao obter conexão do pool")
+        raise HTTPException(
+            status_code=503,
+            detail="Banco de dados indisponível. Tente novamente em instantes.",
+        )
+    try:
         yield conn
+    finally:
+        await pool.release(conn)
